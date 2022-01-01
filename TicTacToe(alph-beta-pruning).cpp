@@ -153,7 +153,7 @@ int minMax(game player, int depth, bool maximize, int alpha, int beta, char comp
             return -depth;
     }
     game n;
-    int index = 0, eval;
+    int index = 0, eval = 0;
     if (maximize)
     {
         int max_eval = INT_MIN;
@@ -165,14 +165,14 @@ int minMax(game player, int depth, bool maximize, int alpha, int beta, char comp
                 n.arr[i / 3][i % 3].second = 1;
                 n.arr[i / 3][i % 3].first = comp;
                 eval = minMax(n, depth + 1, !maximize, alpha, beta, comp, opponent);
-                max_eval = max(max_eval, eval);
-                if (eval == max_eval)
+                if (eval > max_eval)
                 {
+                    max_eval = eval;
                     index = i;
+                    alpha = max(alpha, eval);
+                    if (beta <= alpha)
+                        break;
                 }
-                alpha = max(alpha, eval);
-                if (beta <= alpha)
-                    break;
             }
         }
         if (depth != 0)
@@ -189,14 +189,14 @@ int minMax(game player, int depth, bool maximize, int alpha, int beta, char comp
                 n.arr[i / 3][i % 3].second = 1;
                 n.arr[i / 3][i % 3].first = opponent;
                 eval = minMax(n, depth + 1, !maximize, alpha, beta, comp, opponent);
-                min_eval = min(min_eval, eval);
-                if (eval == min_eval)
+                if (eval < min_eval)
                 {
+                    min_eval = eval;
                     index = i;
+                    beta = min(beta, eval);
+                    if (beta <= alpha)
+                        break;
                 }
-                beta = min(beta, eval);
-                if (beta <= alpha)
-                    break;
             }
         }
         if (depth != 0)
@@ -242,19 +242,17 @@ void versus_Computer()
         }
         player.board();
         char k = player.checkifgameisover();
-        if (k == p1)
+        if (k)
         {
-            cout << "Victory Computer\n";
-            break;
-        }
-        if (k == p2)
-        {
-            cout << "Victory Player\n";
-            break;
+            if (k == p1)
+                cout << "Victory Computer\n";
+            if (k == p2)
+                cout << "Victory Player\n";
+            if (k == 'D')
+                cout << "Draw\n";
+            return;
         }
     }
-    if (i == 9)
-        cout << "Draw\n";
     return;
 }
 int main()
