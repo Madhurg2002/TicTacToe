@@ -139,7 +139,7 @@ void versus_player()
         }
     }
 }
-int minMax(game player, int depth, bool maximize, char comp, char opponent)
+int minMax(game player, int depth, bool maximize, int alpha, int beta, char comp, char opponent)
 {
     char c = player.checkifgameisover();
     if (c)
@@ -153,10 +153,10 @@ int minMax(game player, int depth, bool maximize, char comp, char opponent)
             return -depth;
     }
     game n;
-    int index = 0;
+    int index = 0, eval;
     if (maximize)
     {
-        int max_eval = -20;
+        int max_eval = INT_MIN;
         for (int i = 0; i < 9; i++)
         {
             if (!player.arr[i / 3][i % 3].second)
@@ -164,10 +164,15 @@ int minMax(game player, int depth, bool maximize, char comp, char opponent)
                 n.arr = player.arr;
                 n.arr[i / 3][i % 3].second = 1;
                 n.arr[i / 3][i % 3].first = comp;
-                int j = minMax(n, depth + 1, !maximize, comp, opponent);
-                max_eval = max(max_eval, j);
-                if (j == max_eval)
+                eval = minMax(n, depth + 1, !maximize, alpha, beta, comp, opponent);
+                max_eval = max(max_eval, eval);
+                if (eval == max_eval)
+                {
                     index = i;
+                }
+                alpha = max(alpha, eval);
+                if (beta <= alpha)
+                    break;
             }
         }
         if (depth != 0)
@@ -175,7 +180,7 @@ int minMax(game player, int depth, bool maximize, char comp, char opponent)
     }
     else
     {
-        int min_eval = 10;
+        int min_eval = INT_MAX;
         for (int i = 0; i < 9; i++)
         {
             if (!player.arr[i / 3][i % 3].second)
@@ -183,10 +188,15 @@ int minMax(game player, int depth, bool maximize, char comp, char opponent)
                 n.arr = player.arr;
                 n.arr[i / 3][i % 3].second = 1;
                 n.arr[i / 3][i % 3].first = opponent;
-                int j = minMax(n, depth + 1, !maximize, comp, opponent);
-                min_eval = min(min_eval, j);
-                if (j == min_eval)
+                eval = minMax(n, depth + 1, !maximize, alpha, beta, comp, opponent);
+                min_eval = min(min_eval, eval);
+                if (eval == min_eval)
+                {
                     index = i;
+                }
+                beta = min(beta, eval);
+                if (beta <= alpha)
+                    break;
             }
         }
         if (depth != 0)
@@ -204,9 +214,7 @@ void versus_Computer()
     cout << "Choose which turn you want :-\nFor player 1 press 1\nFor player 2 press 2\nTo exit press any other\n";
     cin >> turn;
     if (turn != 1 && turn != 2)
-    {
         return;
-    }
     cout << "Choose what do you wanna play as X or O\n";
     char p1, p2;
     cin >> p2;
@@ -222,7 +230,7 @@ void versus_Computer()
         if (!((i + turn) % 2))
         {
             count = 0;
-            j = minMax(player, 0, true, p1, p2);
+            j = minMax(player, 0, true, INT_MIN, INT_MAX, p1, p2);
             cout << "Iterations = " << count << endl;
             player.arr[j / 3][j % 3].second = 1;
             player.arr[j / 3][j % 3].first = p1;
